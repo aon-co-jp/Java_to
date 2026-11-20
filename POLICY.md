@@ -50,7 +50,7 @@ Em palavras simples: leva programas antigos (COBOL, C, C++, Fortran) para a web 
 ## 多言語: 現状と完成予定 / Status and plan in 10 languages (ja, en above)
 
 ### 简体中文 — 现状与计划 (2026-11-20)
-*以下为 AI 翻译,尚未经母语者校对。*
+*以下为 AI 翻译,并已由 AI 按母语水平审校;尚未经人类母语者校对。*
 
 **现状(已验证)**: 自动识别 Java 框架(Spring、JAX-RS、Micronaut、Servlet、Spark),把路由和方法体转换为 FastAPI / MFastAPI 的 Python,并生成 Poem / RPoem 的 Rust 骨架。支持 if / for / while / try、switch 语句与箭头式 switch 表达式、集合。无法转换的部分标为 TODO(Java_to)并保留原 Java 注释。单元测试 17 项通过。
 
@@ -59,7 +59,7 @@ Em palavras simples: leva programas antigos (COBOL, C, C++, Fortran) para a web 
 原则:先在真实环境确认再说“完成”;不支持的内容绝不悄悄丢弃,而是明确标出;不写入机密;不新增 REST(仅 Connect)。
 
 ### 繁體中文(台灣) — 現況與計畫 (2026-11-20)
-*以下為 AI 翻譯,尚未經母語者校對。*
+*以下為 AI 翻譯,並已由 AI 以母語水準審校;尚未經人類母語者校對。*
 
 **現況(已驗證)**: 自動辨識 Java 框架(Spring、JAX-RS、Micronaut、Servlet、Spark),將路由與方法本體轉換為 FastAPI / MFastAPI 的 Python,並產生 Poem / RPoem 的 Rust 骨架。支援 if / for / while / try、switch 陳述式與箭頭式 switch 運算式、集合。無法轉換的部分標為 TODO(Java_to)並保留原 Java 註解。單元測試 17 項通過。
 
@@ -68,56 +68,56 @@ Em palavras simples: leva programas antigos (COBOL, C, C++, Fortran) para a web 
 原則:先在真實環境確認才說「完成」;不支援的內容絕不悄悄丟棄,而是明確標出;不寫入機密;不新增 REST(僅 Connect)。
 
 ### 한국어 — 현황과 계획 (2026-11-20)
-*아래는 AI 번역이며 원어민 검수 전입니다.*
+*아래는 AI가 번역하고 AI가 원어민 수준으로 검수한 것이며, 사람 원어민의 검수는 아직 받지 않았습니다.*
 
-**현황(검증 완료)**: Java 프레임워크(Spring, JAX-RS, Micronaut, Servlet, Spark)를 자동 판별하여 라우트와 본문을 FastAPI / MFastAPI의 Python으로, 뼈대를 Poem / RPoem의 Rust로 변환합니다. if / for / while / try, switch 문과 화살표형 switch 식, 컬렉션을 지원합니다. 변환할 수 없는 부분은 TODO(Java_to)로 표시하고 원래 Java를 주석으로 남깁니다. 단위 테스트 17건 통과.
+**현황(검증 완료)**: Java 프레임워크(Spring, JAX-RS, Micronaut, Servlet, Spark)를 자동 판별하여 라우트와 메서드 본문을 FastAPI / MFastAPI의 Python으로, 뼈대를 Poem / RPoem의 Rust로 변환합니다. if / for / while / try, switch 문과 화살표형 switch 식, 컬렉션을 지원합니다. 변환할 수 없는 부분은 TODO(Java_to)로 표시하고 원래 Java를 주석으로 남깁니다. 단위 테스트 17건 통과.
 
-**계획(미완료, 이 순서대로 자동 진행)**: 블록 본문 람다, 메서드 참조, Stream API, 익명 클래스, Rust 쪽 본문 변환(현재는 단순 return만), 그리고 Spring PetClinic 같은 실제 프로젝트에서의 전체 검증.
+**계획(미완료, 이 순서대로 자동 진행)**: 블록 본문 람다, 메서드 참조, Stream API, 익명 클래스, Rust 쪽 메서드 본문 변환(현재는 단순 return만), 그리고 Spring PetClinic 같은 실제 프로젝트에서의 전체 검증.
 
 원칙: 실제 환경에서 확인한 뒤에만 "완료"라고 씁니다. 지원하지 않는 항목은 조용히 버리지 않고 명확히 표시합니다. 비밀 정보는 쓰지 않으며 새 REST는 만들지 않습니다(Connect만).
 
 ### Deutsch — Stand und Plan (2026-11-20)
-*Die folgenden Texte sind KI-Übersetzungen und noch nicht von Muttersprachlern geprüft.*
+*Die folgenden Texte wurden von einer KI übersetzt und von einer KI auf muttersprachliche Natürlichkeit geprüft; eine Prüfung durch menschliche Muttersprachler steht noch aus.*
 
-**Aktueller Stand (geprüft)**: Erkennt das Java-Framework (Spring, JAX-RS, Micronaut, Servlet, Spark) automatisch und wandelt Routen und Rümpfe in FastAPI-/MFastAPI-Python um; für Poem / RPoem entsteht ein Rust-Gerüst. Unterstützt if / for / while / try, switch-Anweisungen und switch-Ausdrücke in Pfeilform, Collections. Nicht Übersetzbares wird als TODO(Java_to) markiert, das Java-Original bleibt als Kommentar. 17 Unit-Tests bestehen.
+**Aktueller Stand (geprüft)**: Erkennt das Java-Framework (Spring, JAX-RS, Micronaut, Servlet, Spark) automatisch und wandelt Routen und Methodenrümpfe in FastAPI-/MFastAPI-Python um; für Poem / RPoem entsteht ein Rust-Gerüst. Unterstützt if / for / while / try, switch-Anweisungen und switch-Ausdrücke in Pfeilform, Collections. Nicht Übersetzbares wird als TODO(Java_to) markiert, das Java-Original bleibt als Kommentar. 17 Unit-Tests bestehen.
 
-**Geplant (offen, wird in dieser Reihenfolge automatisch fortgesetzt)**: Lambdas mit Block, Methodenreferenzen, Stream-API, anonyme Klassen, Rümpfe auf der Rust-Seite (bisher nur einfaches return) sowie ein vollständiger Durchlauf mit echten Projekten wie Spring PetClinic.
+**Geplant (offen, wird in dieser Reihenfolge automatisch fortgesetzt)**: Lambdas mit Block, Methodenreferenzen, Stream-API, anonyme Klassen, Methodenrümpfe auf der Rust-Seite (bisher nur einfaches return) sowie ein vollständiger Durchlauf mit echten Projekten wie Spring PetClinic.
 
 Regeln: „Fertig“ erst nach Prüfung auf einem echten System; Nicht-Unterstütztes nie stillschweigend weglassen, sondern klar kennzeichnen; keine Geheimnisse ablegen; keine neue REST-API (nur Connect).
 
 ### Français — État et plan (2026-11-20)
-*Les textes suivants sont des traductions automatiques, pas encore relues par des locuteurs natifs.*
+*Les textes suivants ont été traduits par une IA et relus par une IA pour leur naturel ; ils n'ont pas encore été relus par des locuteurs natifs humains.*
 
-**État actuel (vérifié)**: Détecte automatiquement le framework Java (Spring, JAX-RS, Micronaut, Servlet, Spark) et convertit routes et corps vers du Python FastAPI / MFastAPI, avec un squelette Rust pour Poem / RPoem. Prend en charge if / for / while / try, instructions switch et expressions switch en flèche, collections. Ce qui ne peut pas être converti est signalé TODO(Java_to), le Java d'origine restant en commentaire. 17 tests unitaires réussis.
+**État actuel (vérifié)**: Détecte automatiquement le framework Java (Spring, JAX-RS, Micronaut, Servlet, Spark) et convertit routes et corps de méthodes vers du Python FastAPI / MFastAPI, avec un squelette Rust pour Poem / RPoem. Prend en charge if / for / while / try, instructions switch et expressions switch en flèche, collections. Ce qui ne peut pas être converti est signalé TODO(Java_to), le Java d'origine restant en commentaire. 17 tests unitaires réussis.
 
-**Prévu (ouvert, poursuivi automatiquement dans cet ordre)**: Lambdas à bloc, références de méthode, API Stream, classes anonymes, corps côté Rust (seulement return simple aujourd'hui) et un essai complet sur de vrais projets comme Spring PetClinic.
+**Prévu (ouvert, poursuivi automatiquement dans cet ordre)**: Lambdas à corps de bloc, références de méthode, API Stream, classes anonymes, corps côté Rust (seulement return simple aujourd'hui) et un essai complet sur de vrais projets comme Spring PetClinic.
 
 Règles : n'écrire « terminé » qu'après vérification sur un système réel ; ne jamais abandonner en silence ce qui n'est pas pris en charge, mais le signaler clairement ; aucun secret ; pas de nouvelle API REST (Connect uniquement).
 
 ### Español — Estado y plan (2026-11-20)
-*Los textos siguientes son traducciones de IA, aún sin revisión de hablantes nativos.*
+*Los textos siguientes fueron traducidos por una IA y revisados por una IA en cuanto a naturalidad; aún no los ha revisado un hablante nativo humano.*
 
-**Estado actual (verificado)**: Detecta automáticamente el framework Java (Spring, JAX-RS, Micronaut, Servlet, Spark) y convierte rutas y cuerpos a Python de FastAPI / MFastAPI, con un esqueleto Rust para Poem / RPoem. Admite if / for / while / try, sentencias switch y expresiones switch en flecha, colecciones. Lo que no se puede convertir se marca TODO(Java_to) y el Java original queda como comentario. 17 pruebas unitarias correctas.
+**Estado actual (verificado)**: Detecta automáticamente el framework Java (Spring, JAX-RS, Micronaut, Servlet, Spark) y convierte rutas y cuerpos de métodos a Python de FastAPI / MFastAPI, con un esqueleto Rust para Poem / RPoem. Admite if / for / while / try, sentencias switch y expresiones switch en flecha, colecciones. Lo que no se puede convertir se marca TODO(Java_to) y el Java original queda como comentario. 17 pruebas unitarias correctas.
 
-**Previsto (pendiente, se continúa automáticamente en este orden)**: Lambdas con bloque, referencias a métodos, API Stream, clases anónimas, cuerpos en Rust (hoy solo return simple) y una prueba completa con proyectos reales como Spring PetClinic.
+**Previsto (pendiente, se continúa automáticamente en este orden)**: Lambdas con cuerpo de bloque, referencias a métodos, API Stream, clases anónimas, cuerpos en Rust (hoy solo return simple) y una prueba completa con proyectos reales como Spring PetClinic.
 
 Reglas: decir «terminado» solo tras comprobarlo en un sistema real; nunca descartar en silencio lo no admitido, sino señalarlo claramente; sin secretos; sin nuevas API REST (solo Connect).
 
 ### Português (BR) — Estado e plano (2026-11-20)
-*Os textos a seguir são traduções de IA, ainda não revisadas por falantes nativos.*
+*Os textos a seguir foram traduzidos por uma IA e revisados por uma IA quanto à naturalidade; ainda não foram revisados por falantes nativos humanos.*
 
-**Estado atual (verificado)**: Detecta automaticamente o framework Java (Spring, JAX-RS, Micronaut, Servlet, Spark) e converte rotas e corpos para Python de FastAPI / MFastAPI, com um esqueleto Rust para Poem / RPoem. Suporta if / for / while / try, instruções switch e expressões switch em seta, coleções. O que não pode ser convertido é marcado TODO(Java_to), com o Java original mantido como comentário. 17 testes unitários passam.
+**Estado atual (verificado)**: Detecta automaticamente o framework Java (Spring, JAX-RS, Micronaut, Servlet, Spark) e converte rotas e corpos de métodos para Python de FastAPI / MFastAPI, com um esqueleto Rust para Poem / RPoem. Suporta if / for / while / try, instruções switch e expressões switch em seta, coleções. O que não pode ser convertido é marcado TODO(Java_to), com o Java original mantido como comentário. 17 testes unitários passam.
 
-**Planejado (em aberto, seguido automaticamente nesta ordem)**: Lambdas com bloco, referências a métodos, API Stream, classes anônimas, corpos no lado Rust (hoje só return simples) e um teste completo com projetos reais como o Spring PetClinic.
+**Planejado (em aberto, seguido automaticamente nesta ordem)**: Lambdas com corpo em bloco, referências a métodos, API Stream, classes anônimas, corpos no lado Rust (hoje só return simples) e um teste completo com projetos reais como o Spring PetClinic.
 
 Regras: só dizer «concluído» depois de verificar em um sistema real; nunca descartar em silêncio o que não é suportado, mas sinalizar claramente; sem segredos; sem novas APIs REST (somente Connect).
 
 ### Русский — Состояние и план (2026-11-20)
-*Следующие тексты переведены ИИ и ещё не проверены носителями языка.*
+*Следующие тексты переведены ИИ и проверены ИИ на естественность звучания; носители языка — люди — их пока не проверяли.*
 
 **Текущее состояние (проверено)**: Автоматически определяет Java-фреймворк (Spring, JAX-RS, Micronaut, Servlet, Spark) и преобразует маршруты и тела методов в Python для FastAPI / MFastAPI, а также создаёт каркас на Rust для Poem / RPoem. Поддерживает if / for / while / try, операторы switch и switch-выражения со стрелкой, коллекции. Непереводимое помечается TODO(Java_to), исходный Java остаётся в комментарии. 17 модульных тестов проходят.
 
-**Планируется (не завершено, продолжается автоматически в таком порядке)**: Лямбды с блоком, ссылки на методы, Stream API, анонимные классы, тела методов на стороне Rust (пока только простой return) и полная проверка на реальных проектах вроде Spring PetClinic.
+**Планируется (не завершено, продолжается автоматически в таком порядке)**: Лямбда-выражения с блочным телом, ссылки на методы, Stream API, анонимные классы, тела методов на стороне Rust (пока только простой return) и полная проверка на реальных проектах вроде Spring PetClinic.
 
 Правила: писать «готово» только после проверки на реальной системе; неподдерживаемое никогда не отбрасывать молча, а явно помечать; не хранить секреты; не создавать новый REST (только Connect).
 
