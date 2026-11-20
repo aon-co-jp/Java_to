@@ -177,7 +177,7 @@ impl<'a> Tr<'a> {
     }
 
     /// switch 文を if/elif/else へ。フォールスルー・途中の break・default の合流は変換せず false(呼び出し側が TODO にする)。
-    fn switch_stmt(&mut self, ind: usize, out: &mut Vec<String>) -> bool {
+    fn switch_stmt(&mut self, ind: usize, out: &mut Vec<String>, assign: Option<&str>) -> bool {
         self.i += 1;
         if !self.at("(") {
             return false;
@@ -233,6 +233,10 @@ impl<'a> Tr<'a> {
         if clauses.is_empty() || clauses.iter().any(|c| c.2 != clauses[0].2) {
             return false;
         }
+        let is_arrow = clauses[0].2;
+        if assign.is_some() && (!is_arrow || clauses.iter().any(|c| c.3.iter().any(|t| t.id("yield")))) {
+            return false;
+        }
         // 古い形: 空の節は次の節と合流(case 1: case 2: ...)
         let mut merged: Vec<(Vec<Vec<Tok>>, bool, Vec<Tok>)> = vec![];
         let mut pend: Vec<Vec<Tok>> = vec![];
@@ -284,17 +288,28 @@ impl<'a> Tr<'a> {
             let cond = if ls.len() == 1 { format!("{v} == {}", ls[0]) } else { format!("{v} in ({})", ls.join(", ")) };
             out.push(format!("{p}{} {cond}:", if first { "if" } else { "elif" }));
             first = false;
-            self.switch_body(ind + 1, out, &body);
+            self.switch_body(ind + 1, out, &body, assign);
         }
         if let Some(b) = default_body {
             out.push(format!("{p}{}", if first { "if True:" } else { "else:" }));
-            self.switch_body(ind + 1, out, &b);
+            self.switch_body(ind + 1, out, &b, assign);
         }
         true
     }
 
-    fn switch_body(&mut self, ind: usize, out: &mut Vec<String>, body: &[Tok]) {
+    fn switch_body(&mut self, ind: usize, out: &mut Vec<String>, body: &[Tok], assign: Option<&str>) {
         let before = out.len();
+        if let Some(a) = assign {
+            if !body.first().is_some_and(|t| t.is("{") || t.id("throw")) {
+                let mut e: Vec<Tok> = body.to_vec();
+                if e.last().is_some_and(|t| t.is(";")) {
+                    e.pop();
+                }
+                let x = self.sub_expr(&e).s;
+                out.push(format!("{}{a}{x}", Self::pad(ind)));
+                return;
+            }
+        }
         let toks: Vec<Tok> = if body.first().is_some_and(|t| t.is("{")) && body.last().is_some_and(|t| t.is("}")) { body[1..body.len() - 1].to_vec() } else { body.to_vec() };
         let mut sub = Tr { t: &toks, i: 0, c: &mut *self.c };
         sub.stmts(ind, out);
@@ -371,6 +386,19 @@ impl<'a> Tr<'a> {
                 }
             }
             Tok::Id(k) if k == "for" => self.for_stmt(ind, out),
+            Tok::Id(k) if k == "return" && self.peek_n(1).is_some_and(|t| t.id("switch")) => {
+                let st = self.i;
+                let mark = out.len();
+                self.i += 1;
+                if self.switch_stmt(ind, out, Some("return ")) {
+                    self.eat(";");
+                } else {
+                    out.truncate(mark);
+                    self.i = st;
+                    let toks = self.skip_stmt();
+                    self.todo(ind, out, "switch 式", &toks);
+                }
+            }
             Tok::Id(k) if k == "return" => {
                 self.i += 1;
                 if self.eat(";") {
@@ -407,7 +435,7 @@ impl<'a> Tr<'a> {
             Tok::Id(k) if k == "switch" => {
                 let st = self.i;
                 let mark = out.len();
-                if !self.switch_stmt(ind, out) {
+                if !self.switch_stmt(ind, out, None) {
                     out.truncate(mark);
                     self.i = st;
                     let toks = self.skip_stmt();
@@ -416,6 +444,28 @@ impl<'a> Tr<'a> {
             }
             Tok::Id(k) if k == "assert" => {
                 let _ = self.skip_stmt();
+            }
+            _ if self.switch_assign_at() => {
+                let st = self.i;
+                let mark = out.len();
+                let mut j = self.i;
+                while !self.t[j].is("=") {
+                    j += 1;
+                }
+                let lhs: Vec<Tok> = self.t[self.i..j].to_vec();
+                let target = match lhs.last() {
+                    Some(t) if lhs.len() == 1 || matches!(t, Tok::Id(_)) && lhs.len() > 1 && !lhs.iter().any(|x| x.is(".") || x.is("[")) => self.sub_expr(&[t.clone()]).s,
+                    _ => self.sub_expr(&lhs).s,
+                };
+                self.i = j + 1;
+                if self.switch_stmt(ind, out, Some(&format!("{target} = "))) {
+                    self.eat(";");
+                } else {
+                    out.truncate(mark);
+                    self.i = st;
+                    let toks = self.skip_stmt();
+                    self.todo(ind, out, "switch 式", &toks);
+                }
             }
             _ => {
                 if self.looks_like_decl() {
@@ -508,6 +558,25 @@ impl<'a> Tr<'a> {
     }
 
     /// `Type name =` / `Type name;` / `final var x =` の判定(先読みのみ、位置は戻す)。
+    /// `x = switch ...` / `Type x = switch ...` の文頭か。
+    fn switch_assign_at(&self) -> bool {
+        let mut j = self.i;
+        let mut d = 0i32;
+        while let Some(t) = self.t.get(j) {
+            if t.is("(") || t.is("[") || t.is("{") {
+                d += 1;
+            } else if t.is(")") || t.is("]") || t.is("}") {
+                d -= 1;
+            } else if d == 0 && t.is(";") {
+                return false;
+            } else if d == 0 && t.is("=") {
+                return self.t.get(j + 1).is_some_and(|n| n.id("switch")) && j > self.i;
+            }
+            j += 1;
+        }
+        false
+    }
+
     fn looks_like_decl(&mut self) -> bool {
         let save = self.i;
         let ok = (|| {
@@ -1587,6 +1656,15 @@ mod tests {
         let q = tb("switch (op) { case 1, 2 -> r = 1; case 3 -> { r = 2; } default -> r = 0; }");
         assert!(q.contains("if _sw1 in (1, 2):"), "{q}");
         assert!(q.contains("elif _sw1 == 3:"), "{q}");
+    }
+    #[test]
+    fn switch_expression() {
+        let p = tb("String s = switch (n) { case 1, 2 -> \"low\"; case 3 -> \"mid\"; default -> \"hi\"; };");
+        assert!(p.contains("s = \"low\""), "{p}");
+        assert!(p.contains("s = \"hi\""), "{p}");
+        let q = tb("return switch (n) { case 1 -> \"a\"; default -> \"b\"; };");
+        assert!(q.contains("return \"a\""), "{q}");
+        assert!(q.contains("else:"), "{q}");
     }
     #[test]
     fn integer_division_and_cast() {
