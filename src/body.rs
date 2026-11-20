@@ -176,6 +176,133 @@ impl<'a> Tr<'a> {
         self.t[st..self.i].to_vec()
     }
 
+    /// switch 文を if/elif/else へ。フォールスルー・途中の break・default の合流は変換せず false(呼び出し側が TODO にする)。
+    fn switch_stmt(&mut self, ind: usize, out: &mut Vec<String>) -> bool {
+        self.i += 1;
+        if !self.at("(") {
+            return false;
+        }
+        let head = self.balanced("(", ")");
+        if !self.at("{") {
+            return false;
+        }
+        let inner = self.balanced("{", "}");
+        // 節: (ラベル群, default か, 矢印形か, 本体)
+        let mut clauses: Vec<(Vec<Vec<Tok>>, bool, bool, Vec<Tok>)> = vec![];
+        let mut i = 0usize;
+        while i < inner.len() {
+            let is_default = inner[i].id("default");
+            if !(inner[i].id("case") || is_default) {
+                return false;
+            }
+            i += 1;
+            let mut label: Vec<Tok> = vec![];
+            let mut d = 0i32;
+            let mut arrow = false;
+            while i < inner.len() {
+                let t = &inner[i];
+                if t.is("(") || t.is("[") || t.is("{") {
+                    d += 1;
+                } else if t.is(")") || t.is("]") || t.is("}") {
+                    d -= 1;
+                } else if d == 0 && (t.is(":") || t.is("->")) {
+                    arrow = t.is("->");
+                    i += 1;
+                    break;
+                }
+                label.push(t.clone());
+                i += 1;
+            }
+            let labels = if is_default { vec![] } else { split_top(&label, ",") };
+            let st = i;
+            let mut d = 0i32;
+            while i < inner.len() {
+                let t = &inner[i];
+                if d == 0 && (t.id("case") || t.id("default")) {
+                    break;
+                }
+                if t.is("(") || t.is("[") || t.is("{") {
+                    d += 1;
+                } else if t.is(")") || t.is("]") || t.is("}") {
+                    d -= 1;
+                }
+                i += 1;
+            }
+            clauses.push((labels, is_default, arrow, inner[st..i].to_vec()));
+        }
+        if clauses.is_empty() || clauses.iter().any(|c| c.2 != clauses[0].2) {
+            return false;
+        }
+        // 古い形: 空の節は次の節と合流(case 1: case 2: ...)
+        let mut merged: Vec<(Vec<Vec<Tok>>, bool, Vec<Tok>)> = vec![];
+        let mut pend: Vec<Vec<Tok>> = vec![];
+        let mut pend_default = false;
+        let n = clauses.len();
+        for (k, (labels, is_def, arrow, mut body)) in clauses.into_iter().enumerate() {
+            pend.extend(labels);
+            pend_default |= is_def;
+            if body.is_empty() && !arrow && k + 1 < n {
+                continue;
+            }
+            if !arrow {
+                let ends_break = body.len() >= 2 && body[body.len() - 1].is(";") && body[body.len() - 2].id("break");
+                if ends_break {
+                    body.truncate(body.len() - 2);
+                } else {
+                    // break が無い節は、最後の節か、return/throw で終わるときだけ許す
+                    let exits = body.len() >= 2 && body[body.len() - 1].is(";") && body.iter().rev().skip(1).take(60).any(|t| t.id("return") || t.id("throw"));
+                    let tail_ok = k + 1 == n || (exits && !body.iter().any(|t| t.is("{") || t.id("if")));
+                    if !tail_ok {
+                        return false;
+                    }
+                }
+                if body.iter().any(|t| t.id("break")) {
+                    return false;
+                }
+            }
+            if pend_default && !pend.is_empty() {
+                return false;
+            }
+            merged.push((std::mem::take(&mut pend), pend_default, body));
+            pend_default = false;
+        }
+        if !pend.is_empty() || pend_default {
+            return false;
+        }
+        let v = format!("_sw{ind}");
+        let subj = self.sub_expr(&head).s;
+        let p = Self::pad(ind);
+        out.push(format!("{p}{v} = {subj}"));
+        let mut first = true;
+        let mut default_body: Option<Vec<Tok>> = None;
+        for (labels, is_def, body) in merged {
+            if is_def {
+                default_body = Some(body);
+                continue;
+            }
+            let ls: Vec<String> = labels.iter().map(|l| self.sub_expr(l).s).collect();
+            let cond = if ls.len() == 1 { format!("{v} == {}", ls[0]) } else { format!("{v} in ({})", ls.join(", ")) };
+            out.push(format!("{p}{} {cond}:", if first { "if" } else { "elif" }));
+            first = false;
+            self.switch_body(ind + 1, out, &body);
+        }
+        if let Some(b) = default_body {
+            out.push(format!("{p}{}", if first { "if True:" } else { "else:" }));
+            self.switch_body(ind + 1, out, &b);
+        }
+        true
+    }
+
+    fn switch_body(&mut self, ind: usize, out: &mut Vec<String>, body: &[Tok]) {
+        let before = out.len();
+        let toks: Vec<Tok> = if body.first().is_some_and(|t| t.is("{")) && body.last().is_some_and(|t| t.is("}")) { body[1..body.len() - 1].to_vec() } else { body.to_vec() };
+        let mut sub = Tr { t: &toks, i: 0, c: &mut *self.c };
+        sub.stmts(ind, out);
+        if out.len() == before {
+            out.push(format!("{}pass", Self::pad(ind)));
+        }
+    }
+
     fn body(&mut self, ind: usize, out: &mut Vec<String>) {
         let before = out.len();
         if self.at("{") {
@@ -278,8 +405,14 @@ impl<'a> Tr<'a> {
                 self.body(ind, out);
             }
             Tok::Id(k) if k == "switch" => {
-                let toks = self.skip_stmt();
-                self.todo(ind, out, "switch 文", &toks);
+                let st = self.i;
+                let mark = out.len();
+                if !self.switch_stmt(ind, out) {
+                    out.truncate(mark);
+                    self.i = st;
+                    let toks = self.skip_stmt();
+                    self.todo(ind, out, "switch 文", &toks);
+                }
             }
             Tok::Id(k) if k == "assert" => {
                 let _ = self.skip_stmt();
@@ -1441,8 +1574,19 @@ mod tests {
     }
     #[test]
     fn unsupported_is_loud() {
-        let p = tb("switch (x) { case 1: break; }");
+        let p = tb("switch (x) { case 1: y = 1; case 2: y = 2; break; }");
         assert!(p.contains("TODO(Java_to)"), "{p}");
+    }
+    #[test]
+    fn switch_classic_and_arrow() {
+        let p = tb("switch (op) { case 1: case 2: r = 1; break; case 3: return \"x\"; default: r = 0; }");
+        assert!(p.contains("_sw1 = op"), "{p}");
+        assert!(p.contains("if _sw1 in (1, 2):"), "{p}");
+        assert!(p.contains("elif _sw1 == 3:"), "{p}");
+        assert!(p.contains("else:"), "{p}");
+        let q = tb("switch (op) { case 1, 2 -> r = 1; case 3 -> { r = 2; } default -> r = 0; }");
+        assert!(q.contains("if _sw1 in (1, 2):"), "{q}");
+        assert!(q.contains("elif _sw1 == 3:"), "{q}");
     }
     #[test]
     fn integer_division_and_cast() {
