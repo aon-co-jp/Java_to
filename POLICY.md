@@ -88,7 +88,7 @@ Regeln: „Fertig“ erst nach Prüfung auf einem echten System; Nicht-Unterstü
 ### Français — État et plan (2026-11-20)
 *Les textes suivants ont été traduits par une IA et relus par une IA pour leur naturel ; ils n'ont pas encore été relus par des locuteurs natifs humains.*
 
-**État actuel (vérifié)**: Détecte automatiquement le framework Java (Spring, JAX-RS, Micronaut, Servlet, Spark) et convertit routes et corps de méthodes vers du Python FastAPI / MFastAPI, avec un squelette Rust pour Poem / RPoem. Prend en charge if / for / while / try, instructions switch et expressions switch en flèche, collections. Ce qui ne peut pas être converti est signalé TODO(Java_to), le Java d'origine restant en commentaire. 17 tests unitaires réussis.
+**État actuel (vérifié)**: Détecte automatiquement le framework Java (Spring, JAX-RS, Micronaut, Servlet, Spark) et convertit routes et corps de méthodes vers du Python FastAPI / MFastAPI, avec un squelette Rust pour Poem / RPoem. Prend en charge if / for / while / try, instructions switch et expressions switch en flèche, collections. Ce qui ne peut pas être converti est signalé par TODO(Java_to), le Java d'origine restant en commentaire. 17 tests unitaires réussis.
 
 **Prévu (ouvert, poursuivi automatiquement dans cet ordre)**: Lambdas à corps de bloc, références de méthode, API Stream, classes anonymes, corps côté Rust (seulement return simple aujourd'hui) et un essai complet sur de vrais projets comme Spring PetClinic.
 
@@ -97,7 +97,7 @@ Règles : n'écrire « terminé » qu'après vérification sur un système réel
 ### Español — Estado y plan (2026-11-20)
 *Los textos siguientes fueron traducidos por una IA y revisados por una IA en cuanto a naturalidad; aún no los ha revisado un hablante nativo humano.*
 
-**Estado actual (verificado)**: Detecta automáticamente el framework Java (Spring, JAX-RS, Micronaut, Servlet, Spark) y convierte rutas y cuerpos de métodos a Python de FastAPI / MFastAPI, con un esqueleto Rust para Poem / RPoem. Admite if / for / while / try, sentencias switch y expresiones switch en flecha, colecciones. Lo que no se puede convertir se marca TODO(Java_to) y el Java original queda como comentario. 17 pruebas unitarias correctas.
+**Estado actual (verificado)**: Detecta automáticamente el framework Java (Spring, JAX-RS, Micronaut, Servlet, Spark) y convierte rutas y cuerpos de métodos a Python de FastAPI / MFastAPI, con un esqueleto Rust para Poem / RPoem. Admite if / for / while / try, sentencias switch y expresiones switch en flecha, colecciones. Lo que no se puede convertir se marca con TODO(Java_to) y el Java original queda como comentario. 17 pruebas unitarias correctas.
 
 **Previsto (pendiente, se continúa automáticamente en este orden)**: Lambdas con cuerpo de bloque, referencias a métodos, API Stream, clases anónimas, cuerpos en Rust (hoy solo return simple) y una prueba completa con proyectos reales como Spring PetClinic.
 
