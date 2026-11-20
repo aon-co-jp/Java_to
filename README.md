@@ -65,3 +65,14 @@ Em palavras simples: leva programas antigos (COBOL, C, C++, Fortran) para a web 
 Простыми словами: старые программы (COBOL, C, C++, Fortran) переносятся в сегодняшний веб. Сервер выбирается из Axum, Poem, FastAPI, RPoem, RPoRea; интерфейс — из HTML5, CSS3, TypeScript, Bootstrap; база данных — из MySQL, MariaDB, PostgreSQL, SQLite, в допустимых сочетаниях. COBOL переписывается; C, C++ и Fortran работают как есть, а веб их вызывает (в Rust пока не переписываются). COBOL для другой ОС делает `pl2pl cobol`.
 
 **確認したこと / Verified**: Axum(COBOL 7本・C・C++)を起動して `POST /cobol_to.Program/Run` が正しい出力を返す。全組み合わせの検査は単体試験。**まだ / Not yet**: gfortran の実機ビルド(この PC の WSL に無い)、C/C++/Fortran→Rust の書き換え、COBOL→別 OS の COBOL の拡張、Axum 以外の起動確認。**進め方 / How we work**: 未了は確認せず自動で進める(元のリポジトリの削除だけは最後に確認)。 / Unfinished items go on automatically without asking (only deleting the original repos is confirmed first).
+
+## 現状と完成予定 (2026-11-20) / Status and plan
+### 日本語
+**現状(確認済み)**: Java(Spring/JAX-RS/Micronaut/Servlet/Spark)のルート抽出と、FastAPI/MFastAPI の本体翻訳(if/for/while/try、switch 文と switch 式〈矢印形〉、コレクション)、Poem/RPoem の骨組み。単体試験 17 件。移せないものは TODO(Java_to) として明示。
+**完成予定(未了・この順で確認なしに進める)**: ①ブロック本体のラムダ・メソッド参照・Stream API ②匿名クラス ③yield を含む switch 式・フォールスルー ④Rust 側の本体翻訳(現在は単純な return のみ) ⑤Spring PetClinic 等の実プロジェクトでの変換と実行確認 ⑥Struts/JSF の画面系・Kotlin/Scala ⑦pl2pl との共通 IR 化。
+**約束**: 実機で確かめてから「できた」と書く/未対応は黙って落とさず明示する/秘密は書かない/新しい REST は作らない(Connect のみ)。
+### English
+**Current state (verified)**: Extracts routes from Java (Spring, JAX-RS, Micronaut, Servlet, Spark) and translates bodies for FastAPI/MFastAPI (if/for/while/try, switch statements and arrow-form switch expressions, collections), with Poem/RPoem scaffolds. 17 unit tests. Anything not translatable is flagged as TODO(Java_to).
+**Planned (open, continued automatically in this order)**: (1) block-bodied lambdas, method references and the Stream API, (2) anonymous classes, (3) switch expressions with yield and fall-through, (4) body translation on the Rust side (only simple return today), (5) converting and running real projects such as Spring PetClinic, (6) Struts/JSF screens, Kotlin/Scala, (7) a shared IR with pl2pl.
+**Rules**: say "done" only after checking on a real system; never drop unsupported items silently, always flag them; keep secrets out; no new REST (Connect only).
+

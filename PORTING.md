@@ -49,3 +49,14 @@ Em palavras simples: leva programas antigos (COBOL, C, C++, Fortran) para a web 
 ## 2026-11-20 追記2: switch 式 / switch expressions
 **日本語**: `x = switch (n) { case 1, 2 -> "a"; default -> "b"; };`、`String s = switch ...`、`return switch ...` を `if/elif/else` の代入・`return` に変換する(矢印形のみ。`yield` を含むブロック本体は従来どおり `TODO(Java_to)`)。単体試験 17 件成功。
 **English**: `x = switch (n) { case 1, 2 -> "a"; default -> "b"; };`, `String s = switch ...` and `return switch ...` convert to `if/elif/else` assignments or `return` (arrow form only; block bodies with `yield` still produce `TODO(Java_to)`). 17 unit tests pass.
+
+## 現状と完成予定 (2026-11-20) / Status and plan
+### 日本語
+**現状(確認済み)**: Java(Spring/JAX-RS/Micronaut/Servlet/Spark)のルート抽出と、FastAPI/MFastAPI の本体翻訳(if/for/while/try、switch 文と switch 式〈矢印形〉、コレクション)、Poem/RPoem の骨組み。単体試験 17 件。移せないものは TODO(Java_to) として明示。
+**完成予定(未了・この順で確認なしに進める)**: ①ブロック本体のラムダ・メソッド参照・Stream API ②匿名クラス ③yield を含む switch 式・フォールスルー ④Rust 側の本体翻訳(現在は単純な return のみ) ⑤Spring PetClinic 等の実プロジェクトでの変換と実行確認 ⑥Struts/JSF の画面系・Kotlin/Scala ⑦pl2pl との共通 IR 化。
+**約束**: 実機で確かめてから「できた」と書く/未対応は黙って落とさず明示する/秘密は書かない/新しい REST は作らない(Connect のみ)。
+### English
+**Current state (verified)**: Extracts routes from Java (Spring, JAX-RS, Micronaut, Servlet, Spark) and translates bodies for FastAPI/MFastAPI (if/for/while/try, switch statements and arrow-form switch expressions, collections), with Poem/RPoem scaffolds. 17 unit tests. Anything not translatable is flagged as TODO(Java_to).
+**Planned (open, continued automatically in this order)**: (1) block-bodied lambdas, method references and the Stream API, (2) anonymous classes, (3) switch expressions with yield and fall-through, (4) body translation on the Rust side (only simple return today), (5) converting and running real projects such as Spring PetClinic, (6) Struts/JSF screens, Kotlin/Scala, (7) a shared IR with pl2pl.
+**Rules**: say "done" only after checking on a real system; never drop unsupported items silently, always flag them; keep secrets out; no new REST (Connect only).
+
