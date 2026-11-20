@@ -19,6 +19,8 @@ pub struct Ctx {
     pub body_var: Option<String>,
     pub servlet: bool,
     pub lambda_params: Vec<String>,
+    pub hoisted: Vec<String>, // ブロック本体のラムダを文の直前へ出した def(インデント0起点)
+    pub lam_n: usize,
     pub notes: Vec<String>,
     pub uses: HashSet<&'static str>, // `time` `uuid` `math` `re` `rt`
     pub in_static: bool,
@@ -333,6 +335,18 @@ impl<'a> Tr<'a> {
     }
 
     fn stmt(&mut self, ind: usize, out: &mut Vec<String>) {
+        let start = out.len();
+        let mark = self.c.hoisted.len();
+        self.stmt_inner(ind, out);
+        if self.c.hoisted.len() > mark {
+            let pad = Self::pad(ind);
+            let defs: Vec<String> = self.c.hoisted.drain(mark..).map(|l| format!("{pad}{l}")).collect();
+            let at = start.min(out.len());
+            out.splice(at..at, defs);
+        }
+    }
+
+    fn stmt_inner(&mut self, ind: usize, out: &mut Vec<String>) {
         let p = Self::pad(ind);
         let Some(tok) = self.peek().cloned() else { return };
         match &tok {
@@ -1136,8 +1150,21 @@ impl<'a> Tr<'a> {
             if inner.first().is_some_and(|t| t.id("return")) && inner.iter().filter(|t| t.is(";")).count() == 1 {
                 e(format!("lambda {}: {}", params.iter().map(|x| snake(x)).collect::<Vec<_>>().join(", "), self.sub_expr(&inner[1..inner.len() - 1]).s), "")
             } else {
-                self.c.notes.push("ブロック本体のラムダは未対応".into());
-                e("None", "")
+                // 複数の文を持つブロック本体: 直前に `def _lamN(...)` として出し、その名前を返す
+                self.c.lam_n += 1;
+                let name = format!("_lam{}", self.c.lam_n);
+                let mut lines: Vec<String> = vec![];
+                {
+                    let mut sub = Tr { t: &inner, i: 0, c: &mut *self.c };
+                    sub.stmts(1, &mut lines);
+                }
+                if lines.is_empty() {
+                    lines.push("    pass".into());
+                }
+                let mut def = vec![format!("def {name}({}):", params.iter().map(|x| snake(x)).collect::<Vec<_>>().join(", "))];
+                def.extend(lines);
+                self.c.hoisted.extend(def);
+                e(name, "")
             }
         } else {
             let b = self.expr(2);
@@ -1198,6 +1225,10 @@ impl<'a> Tr<'a> {
             }
         }
         x
+    }
+
+    fn user_method(&self, name: &str) -> bool {
+        self.c.methods.contains(name) || self.c.svc_methods.contains(name)
     }
 
     fn method_call(&mut self, recv: E, name: &str, args: Vec<E>) -> E {
@@ -1295,8 +1326,31 @@ impl<'a> Tr<'a> {
             ("incrementAndGet", 0) | ("getAndIncrement", 0) => {
                 e(format!("{r}.increment_and_get()"), "int")
             }
-            ("stream", 0) | ("map", 1) | ("filter", 1) | ("collect", 1) | ("forEach", 1) | ("sorted", _) | ("reduce", _) | ("mapToInt", 1) => {
-                self.c.notes.push(format!("Stream API(.{name}) は未対応"));
+            // ---- Stream API(中間結果は list として即時に評価する) ----
+            ("stream", 0) | ("boxed", 0) | ("toList", 0) if !self.user_method(name) && r != "Collectors" => e(format!("list({r})"), ""),
+            ("map", 1) | ("mapToInt", 1) | ("mapToLong", 1) | ("mapToDouble", 1) | ("mapToObj", 1) if !self.user_method(name) => e(format!("list(map({}, {r}))", a[0]), ""),
+            ("filter", 1) if !self.user_method(name) => e(format!("list(filter({}, {r}))", a[0]), ""),
+            ("forEach", 1) if !self.user_method(name) => e(format!("list(map({}, {r}))", a[0]), ""),
+            ("anyMatch", 1) if !self.user_method(name) => e(format!("any(map({}, {r}))", a[0]), "boolean"),
+            ("allMatch", 1) if !self.user_method(name) => e(format!("all(map({}, {r}))", a[0]), "boolean"),
+            ("noneMatch", 1) if !self.user_method(name) => e(format!("(not any(map({}, {r})))", a[0]), "boolean"),
+            ("distinct", 0) if !self.user_method(name) => e(format!("list(dict.fromkeys({r}))"), ""),
+            ("limit", 1) if !self.user_method(name) => e(format!("list({r})[:{}]", a[0]), ""),
+            ("skip", 1) if !self.user_method(name) => e(format!("list({r})[{}:]", a[0]), ""),
+            ("sorted", 0) if !self.user_method(name) => e(format!("sorted({r})"), ""),
+            ("sum", 0) if !self.user_method(name) => e(format!("sum({r})"), "int"),
+            ("count", 0) if !self.user_method(name) => e(format!("len(list({r}))"), "long"),
+            ("findFirst", 0) | ("findAny", 0) if !self.user_method(name) => e(format!("next(iter({r}), None)"), ""),
+            ("reduce", 2) if !self.user_method(name) => e(format!("__import__(\"functools\").reduce({}, {r}, {})", a[1], a[0]), ""),
+            ("collect", 1) if !self.user_method(name) && a[0].starts_with("Collectors.to_list(") => e(format!("list({r})"), ""),
+            ("collect", 1) if !self.user_method(name) && a[0].starts_with("Collectors.to_set(") => e(format!("set({r})"), ""),
+            ("collect", 1) if !self.user_method(name) && a[0].starts_with("Collectors.joining(") => {
+                let sep = a[0].trim_start_matches("Collectors.joining(").trim_end_matches(')').to_string();
+                let sep = if sep.is_empty() { "\"\"".to_string() } else { sep };
+                e(format!("{sep}.join(map(str, {r}))"), "String")
+            }
+            ("sorted", _) | ("reduce", _) | ("collect", 1) | ("stream", 0) => {
+                self.c.notes.push(format!("Stream API(.{name}) のこの形は未対応"));
                 e(format!("{r}.{}({})", snake(name), a.join(", ")), "")
             }
             _ => {
@@ -1618,6 +1672,17 @@ mod tests {
         translate_body(&lex(src), &mut c, 1).join("\n")
     }
 
+    #[test]
+    fn block_lambda_and_stream() {
+        let p = tb("List<Integer> xs = new ArrayList<>(); List<Integer> ys = xs.stream().filter(x -> x > 1).map(x -> { int d = x * 2; if (d > 10) { return 10; } return d; }).collect(Collectors.toList()); int total = xs.stream().mapToInt(x -> x).sum(); String s = xs.stream().map(x -> String.valueOf(x)).collect(Collectors.joining(\", \"));");
+        assert!(p.contains("def _lam1(x):"), "{p}");
+        assert!(p.contains("d = x * 2"), "{p}");
+        assert!(p.contains("list(filter(lambda x: x > 1"), "{p}");
+        assert!(p.contains("list(map(_lam1"), "{p}");
+        assert!(p.contains("sum(list(map(lambda x: x"), "{p}");
+        assert!(p.contains(".join(map(str,"), "{p}");
+        assert!(p.find("def _lam1").unwrap() < p.find("ys =").unwrap(), "{p}");
+    }
     #[test]
     fn if_for_return() {
         let p = tb("int total = 0; for (int i = 0; i < n; i++) { total += i; } if (total > 10 && flag) { return \"big\"; } else { return \"small\" + total; }");
