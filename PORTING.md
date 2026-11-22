@@ -256,3 +256,16 @@ Agora são convertidas as lambdas com corpo em bloco e as chamadas comuns da API
 ## 2026-11-22 追記: toMap と groupingBy の下流コレクター (JA/EN)
 **日本語**: `Collectors.toMap(k, v)`、`groupingBy` の下流 `counting`/`summingInt`(Long・Double)/`mapping(f, toList()|toSet())` を Python へ変換。生成した Python を単体試験で実行して結果の一致を確認(21件成功)。括弧の数え間違い(ラムダ内の `)` を削っていた)も直した。**未了**: `toMap` の重複キー結合、`averagingInt`、`partitioningBy`、匿名クラス、Rust 側のメソッド本体、Spring PetClinic での通し試験。
 **English**: `Collectors.toMap(k, v)` and the `groupingBy` downstream collectors `counting`, `summingInt` (Long/Double) and `mapping(f, toList()|toSet())` now convert to Python; the unit test runs the generated code and checks the result (21 tests pass). Also fixed a paren-stripping bug that ate the `)` of a lambda. **Open**: `toMap` merge function, `averagingInt`, `partitioningBy`, anonymous classes, Rust-side method bodies, an end-to-end run on Spring PetClinic.
+
+
+## 2026-11-22 現状と完成予定と課題 / Status, plan and issues
+
+### 日本語
+**現状**: Java(Spring/JAX-RS/Servlet/Spark)を Python(FastAPI/MFastAPI)と Rust(Poem/RPoem)へ変換。ラムダ(式・ブロック)、メソッド参照、Stream API(map/filter/sorted(Comparator)/reduce/collect)、Comparator(comparing/thenComparing/reversed)、Collectors(toList/toSet/joining/toMap/groupingBy と counting・summingInt・mapping)に対応。生成した Python を単体試験で実行して結果を確認(21件成功)。
+**完成予定**: toMap の重複キー結合、averagingInt、partitioningBy、匿名クラス、Rust 側のメソッド本体(今は単純な return のみ)、Spring PetClinic など実プロジェクトでの通し試験。
+**課題**: 中間結果を list で即時評価するため、無限ストリームや遅延評価に依存するコードは対象外。Rust 側は骨組み中心。実プロジェクトでの検証が未了。
+
+### English
+**Status**: Converts Java (Spring/JAX-RS/Servlet/Spark) to Python (FastAPI/MFastAPI) and Rust (Poem/RPoem). Supports lambdas (expression and block), method references, the Stream API (map/filter/sorted(Comparator)/reduce/collect), Comparator (comparing/thenComparing/reversed) and Collectors (toList/toSet/joining/toMap/groupingBy with counting, summingInt, mapping). The unit tests run the generated Python and check results (21 tests pass).
+**Planned**: toMap merge function, averagingInt, partitioningBy, anonymous classes, Rust-side method bodies (currently a simple return only), end-to-end runs on real projects such as Spring PetClinic.
+**Issues**: Intermediate results are evaluated eagerly as lists, so infinite or lazy streams are out of scope. The Rust side is mostly a scaffold. Real-project verification is not done yet.
