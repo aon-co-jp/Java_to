@@ -313,3 +313,8 @@ Agora são convertidas as lambdas com corpo em bloco e as chamadas comuns da API
 - 無名クラスにメソッドが複数あるとき、これまでは最初の1つだけを出していましたが、**すべてのメソッドを Python クラスのメソッドとして出す**ようにしました(フィールドは各メソッドから見えます)。最初のメソッドは従来どおり `__call__` でも呼べます。
 - 単体テストは31件成功(`anonymous_class_multiple_methods`)。生成物の文字列確認までで、Python 実行の通し確認は未了です。
 - 未了: コレクション操作を含む Rust 本体、Spring PetClinic など実プロジェクトでの通し確認。
+
+## 2026-11-23 追記: Rust 本体の List 操作(日本語)
+- Rust(Poem / RPoem)側のメソッド本体で、`List<Integer> xs = new ArrayList<>();`(`Vec<i32>` になる。`Integer` などの箱型は基本型に直す)、`xs.add(x);`(`push`)、`xs.get(i)`(添字アクセス)、拡張 for `for (int x : xs)` を変換できるようにしました。`xs.size()` は従来どおり `len()` です。
+- 単体テストは32件成功(`list_operations`、生成された Rust の文字列確認)。生成 Rust のコンパイル確認(`tests/run-rust.sh`)はこの追加分では未実施です。
+- 未了: Map や Stream を含む Rust 本体、Spring PetClinic など実プロジェクトでの通し確認。
