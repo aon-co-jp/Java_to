@@ -260,3 +260,16 @@ Agora são convertidas as lambdas com corpo em bloco e as chamadas comuns da API
 اکنون لامبداهای دارای بدنهٔ بلوکی و فراخوانی‌های رایج Stream API تبدیل می‌شوند. لامبدایی که چند دستور دارد (مثلاً `x -> { int d = x * 2; ...; return d; }`) به‌صورت `def _lam1(x):` درست پیش از دستورِ دربرگیرنده تولید می‌شود و در جای اصلی با همین نام به کار می‌رود. `.stream()`، `.map(...)`، `.filter(...)`، `.mapToInt(...)`، `.forEach(...)`، `.anyMatch(...)`، `.allMatch(...)`، `.noneMatch(...)`، `.distinct()`، `.limit(n)`، `.skip(n)`، `.sorted()`، `.sum()`، `.count()`، `.findFirst()`، `.reduce(مقدار آغازین, تابع)` و نیز `.collect(Collectors.toList())`، `Collectors.toSet()` و `Collectors.joining(جداکننده)` به Python ترجمه می‌شوند؛ نتیجه‌های میانی بلافاصله به‌صورت list محاسبه می‌شوند. کد Python تولیدشده را واقعاً اجرا کردیم: اعمال `filter(x > 1)` روی `[1..6]` و سپس لامبدای بلوکی دارای `if` (سقف 10) نتیجهٔ `[4, 6, 8, 10, 10]` را می‌دهد و `mapToInt(...).sum()` برابر 21 است. ۱۸ آزمون واحد موفق است. **هنوز پشتیبانی نمی‌شود**: `.sorted(...)` همراه با مقایسه‌گر، گردآورنده‌های دیگر مانند `Collectors.groupingBy`، کلاس‌های ناشناس، ارجاع به متد، ترجمهٔ بدنهٔ متدها در سمت Rust (فعلاً فقط `return` ساده) و آزمایش کامل روی پروژه‌های واقعی مانند Spring PetClinic. فهرست‌های «برنامه‌ریزی‌شده» در بخش‌های زبانی دیگرِ بالا اکنون قدیمی است و به‌روزرسانی روزانهٔ ترجمه‌ها آن را اصلاح خواهد کرد.
 
 </div>
+
+
+## 2026-11-22 現状と完成予定と課題 / Status, plan and issues
+
+### 日本語
+**現状**: Java(Spring/JAX-RS/Servlet/Spark)を Python(FastAPI/MFastAPI)と Rust(Poem/RPoem)へ変換。ラムダ(式・ブロック)、メソッド参照、Stream API(map/filter/sorted(Comparator)/reduce/collect)、Comparator(comparing/thenComparing/reversed)、Collectors(toList/toSet/joining/toMap/groupingBy と counting・summingInt・mapping)に対応。生成した Python を単体試験で実行して結果を確認(21件成功)。
+**完成予定**: toMap の重複キー結合、averagingInt、partitioningBy、匿名クラス、Rust 側のメソッド本体(今は単純な return のみ)、Spring PetClinic など実プロジェクトでの通し試験。
+**課題**: 中間結果を list で即時評価するため、無限ストリームや遅延評価に依存するコードは対象外。Rust 側は骨組み中心。実プロジェクトでの検証が未了。
+
+### English
+**Status**: Converts Java (Spring/JAX-RS/Servlet/Spark) to Python (FastAPI/MFastAPI) and Rust (Poem/RPoem). Supports lambdas (expression and block), method references, the Stream API (map/filter/sorted(Comparator)/reduce/collect), Comparator (comparing/thenComparing/reversed) and Collectors (toList/toSet/joining/toMap/groupingBy with counting, summingInt, mapping). The unit tests run the generated Python and check results (21 tests pass).
+**Planned**: toMap merge function, averagingInt, partitioningBy, anonymous classes, Rust-side method bodies (currently a simple return only), end-to-end runs on real projects such as Spring PetClinic.
+**Issues**: Intermediate results are evaluated eagerly as lists, so infinite or lazy streams are out of scope. The Rust side is mostly a scaffold. Real-project verification is not done yet.
