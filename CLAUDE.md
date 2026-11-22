@@ -280,3 +280,8 @@ Agora são convertidas as lambdas com corpo em bloco e as chamadas comuns da API
 - **Rust 側の本体**: `Math.max/min/abs/pow/sqrt`、`String.valueOf`、文字列の `length/size/toUpperCase/toLowerCase/trim/isEmpty/contains/startsWith/endsWith/equals` に対応しました。対応外の呼び出しがあれば、これまでどおり TODO の応答に戻します。
 - **確認**: 単体テスト30件(生成した Python を実行して結果を確認)。`tests/run-rust.sh`・`tests/run-rpoem.sh` で生成 Rust のコンパイル確認。pl2pl の `converters/java_to` にも同期しました。
 - **まだ**: コレクション操作を含む Rust 本体、Spring PetClinic など実プロジェクトでの通し確認、複数メソッドを持つ無名クラスの全メソッド対応(いまは最初の1つだけ)。
+
+## 2026-11-23 追記: 複数メソッドを持つ無名クラス(日本語)
+- 無名クラスにメソッドが複数あるとき、これまでは最初の1つだけを出していましたが、**すべてのメソッドを Python クラスのメソッドとして出す**ようにしました(フィールドは各メソッドから見えます)。最初のメソッドは従来どおり `__call__` でも呼べます。
+- 単体テストは31件成功(`anonymous_class_multiple_methods`)。生成物の文字列確認までで、Python 実行の通し確認は未了です。
+- 未了: コレクション操作を含む Rust 本体、Spring PetClinic など実プロジェクトでの通し確認。
