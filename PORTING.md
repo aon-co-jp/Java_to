@@ -322,3 +322,7 @@ Agora são convertidas as lambdas com corpo em bloco e as chamadas comuns da API
 ## 2026-11-23 追記: List 操作の生成 Rust をコンパイル確認(日本語)
 - 前回の List 操作(宣言・`add`・`get`・拡張 for)を、Spring サンプルに `/squares/{n}` を足して実際に変換し、WSL で `tests/run-rust.sh` を実行しました。生成された Rust(`Vec<i32>`、`push`、`for x in xs.clone()`、`xs.len()`)は、spring・jaxrs・servlet・spark の4つとも `cargo check` に通りました。
 - 実行して値を確かめるところまでは未了です。未了: Map や Stream を含む Rust 本体、Spring PetClinic など実プロジェクトでの通し確認。
+
+- 2026-11-23 追記: Rust 側のメソッド本体で三項演算子 `c ? a : b` を `(if c { a } else { b })` へ移すようにしました(試験33件成功)。実プロジェクトでの通し試験・`reducing` などの下流コレクターは未了です。
+
+- 2026-11-23 update: in Rust-side method bodies, the ternary `c ? a : b` is now ported to `(if c { a } else { b })` (33 tests pass). End-to-end runs on real projects and downstream collectors such as `reducing` are still open.
