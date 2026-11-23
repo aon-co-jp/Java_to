@@ -298,3 +298,9 @@ Agora são convertidas as lambdas com corpo em bloco e as chamadas comuns da API
 - 2026-11-23 追記: Rust 側のメソッド本体で三項演算子 `c ? a : b` を `(if c { a } else { b })` へ移すようにしました(試験33件成功)。実プロジェクトでの通し試験・`reducing` などの下流コレクターは未了です。
 
 - 2026-11-23 update: in Rust-side method bodies, the ternary `c ? a : b` is now ported to `(if c { a } else { b })` (33 tests pass). End-to-end runs on real projects and downstream collectors such as `reducing` are still open.
+
+## 2026-11-23 追記: OpenAPI 先行のプロジェクトに対応(Spring PetClinic REST で確認・日本語)
+- **きっかけ(実プロジェクトでの通し確認)**: GitHub の `spring-petclinic/spring-petclinic-rest`(Java 109ファイル)を変換にかけたところ、ルートが **1本しか見つかりませんでした**。このプロジェクトは `openapi.yml` から生成した `XxxApi` インターフェースを `implements` する方式で、コントローラーに `@GetMapping` などが無いためです。
+- **対応**: `openapi.yml`(`openapi.yaml`・`swagger.yml`・`swagger.yaml` も)の `paths:` から (operationId・動詞・経路) を読み、`implements XxxApi` のコントローラーでメソッド名が operationId と一致するものをルートにします。引数は、経路の `{名前}` に当たれば Path、単純な型なら Query、それ以外は Body としました。
+- **結果**: ルートが **1本 → 37本**(openapi.yml の operationId 37件と一致)になりました。単体テスト34件成功(`openapi_first_routes`)。`tests/run-pc.sh <プロジェクトのパス>` で実プロジェクトを変換できます。
+- **まだ**: 本体(`ResponseEntity<...Dto>` を返す部分や MapStruct のマッパー)は変換していません。サーバー URL の接頭辞(`/api` など)、生成した FastAPI/Rust の実行確認、`/v2` 系のページング型は未対応です。
