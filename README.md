@@ -365,3 +365,55 @@ Agora são convertidas as lambdas com corpo em bloco e as chamadas comuns da API
 - 生成した PetClinic アプリを呼ぶと `object has no attribute clinicService` で落ちていた原因は、本体の `this.clinicService` が **camelCase のまま** `self.clinicService` と出る一方、フィールドの宣言は `self.clinic_service`(snake_case)だったことでした。`this.xxx` は snake_case にそろえるよう直しました(単体テスト38件成功、`this_field_is_snake_case`)。
 - 結果: `GET /pettypes`・`/owners`・`/vets` の処理が **コントローラー → サービス → リポジトリ** まで進むようになりました。いまはリポジトリのインターフェース(`PetTypeRepository.findAll` など)の `NotImplementedError`(TODO)で止まります。
 - **まだ**: リポジトリのインターフェースに実装クラス(Jdbc・JPA・Spring Data JPA の3種類がある)が複数ある場合の選び方と、メモリ上の足場(`InMemoryRepository`)への割り当て、MapStruct マッパーの生成は未対応です。
+
+## 2026-11-25 現況・未了 / Status and open items
+
+*日本語・English が基本、ほかの言語は AI 翻訳(ネイティブ確認前)。 / Japanese and English are the base; other languages are AI-translated, not native-checked.*
+
+### 日本語
+
+現状: Java(2000年頃〜2026年)のフレームワークを自動判定し、FastAPI・MFastAPI・Poem・RPoem のいずれかへ変換する道具。最近は PetClinic 向けに ResponseEntity・HttpHeaders・UriComponentsBuilder・MapStruct の Mapper・親データクラスの継承に対応し、導出クエリをメモリ上のリポジトリで動かせるようにした。残り: Mac・iPhone の実機での確認(ここには実機がありません)。翻訳: AI 翻訳(ja/en 以外)、ネイティブの確認はまだです。
+
+### English
+
+Status: a tool that auto-detects the Java framework (c. 2000 to 2026) and converts to FastAPI, MFastAPI, Poem or RPoem. Recently, for PetClinic, it gained ResponseEntity, HttpHeaders, UriComponentsBuilder, MapStruct mappers and parent data class inheritance, and derived queries now run on an in-memory repository. Open: checks on a real Mac and iPhone (no such devices here). Translations: AI-translated (other than ja/en), not yet checked by native speakers.
+
+### 简体中文
+
+现状:自动判别 Java 框架(约 2000 年至 2026 年),并转换为 FastAPI、MFastAPI、Poem 或 RPoem 的工具。最近为 PetClinic 增加了 ResponseEntity、HttpHeaders、UriComponentsBuilder、MapStruct 的 Mapper 以及父数据类继承,派生查询也可在内存仓库上运行。待办:在真实的 Mac 和 iPhone 上验证(这里没有这些设备)。翻译:由 AI 翻译,尚未经母语者确认。
+
+### 繁體中文
+
+現況:自動判別 Java 框架(約 2000 年至 2026 年),並轉換為 FastAPI、MFastAPI、Poem 或 RPoem 的工具。最近為 PetClinic 新增了 ResponseEntity、HttpHeaders、UriComponentsBuilder、MapStruct 的 Mapper 以及父資料類別繼承,衍生查詢也可在記憶體儲存庫上執行。待辦:在實體 Mac 和 iPhone 上驗證(這裡沒有這些裝置)。翻譯:由 AI 翻譯,尚未經母語人士確認。
+
+### 한국어
+
+현황: Java 프레임워크(약 2000년~2026년)를 자동으로 판별해 FastAPI, MFastAPI, Poem 또는 RPoem으로 변환하는 도구입니다. 최근 PetClinic을 위해 ResponseEntity, HttpHeaders, UriComponentsBuilder, MapStruct Mapper, 상위 데이터 클래스 상속을 지원했고, 파생 쿼리를 메모리 저장소에서 실행할 수 있게 했습니다. 남은 일: 실제 Mac과 iPhone에서의 확인(여기에는 해당 기기가 없습니다). 번역: AI 번역이며 원어민의 확인은 아직 받지 않았습니다.
+
+### Deutsch
+
+Stand: ein Werkzeug, das das Java-Framework (ca. 2000 bis 2026) automatisch erkennt und nach FastAPI, MFastAPI, Poem oder RPoem umwandelt. Zuletzt kamen für PetClinic ResponseEntity, HttpHeaders, UriComponentsBuilder, MapStruct-Mapper und die Vererbung von Eltern-Datenklassen hinzu; abgeleitete Abfragen laufen nun auf einem In-Memory-Repository. Offen: Prüfung auf einem echten Mac und iPhone (solche Geräte haben wir hier nicht). Übersetzungen: KI-übersetzt, noch nicht von Muttersprachlern geprüft.
+
+### Français
+
+État : un outil qui détecte automatiquement le framework Java (vers 2000 à 2026) et convertit vers FastAPI, MFastAPI, Poem ou RPoem. Récemment, pour PetClinic, il a gagné ResponseEntity, HttpHeaders, UriComponentsBuilder, les Mapper MapStruct et l'héritage de classes de données parentes ; les requêtes dérivées s'exécutent désormais sur un dépôt en mémoire. Reste à faire : vérifier sur un vrai Mac et un vrai iPhone (nous n'avons pas ces appareils ici). Traductions : faites par IA, pas encore relues par des locuteurs natifs.
+
+### Español
+
+Estado: una herramienta que detecta automáticamente el framework de Java (de c. 2000 a 2026) y convierte a FastAPI, MFastAPI, Poem o RPoem. Hace poco, para PetClinic, sumó ResponseEntity, HttpHeaders, UriComponentsBuilder, los Mapper de MapStruct y la herencia de clases de datos padre; las consultas derivadas ya se ejecutan sobre un repositorio en memoria. Pendiente: comprobar en un Mac y un iPhone reales (aquí no tenemos esos dispositivos). Traducciones: hechas por IA, aún sin revisión de hablantes nativos.
+
+### Português
+
+Situação: uma ferramenta que detecta automaticamente o framework Java (de c. 2000 a 2026) e converte para FastAPI, MFastAPI, Poem ou RPoem. Recentemente, para o PetClinic, ganhou ResponseEntity, HttpHeaders, UriComponentsBuilder, os Mapper do MapStruct e a herança de classes de dados pai; as consultas derivadas já rodam em um repositório em memória. Pendente: verificar em um Mac e um iPhone de verdade (não temos esses aparelhos aqui). Traduções: feitas por IA, ainda não revisadas por falantes nativos.
+
+### Русский
+
+Состояние: инструмент, который автоматически определяет Java-фреймворк (примерно 2000–2026 годы) и преобразует проект в FastAPI, MFastAPI, Poem или RPoem. Недавно для PetClinic добавлены ResponseEntity, HttpHeaders, UriComponentsBuilder, Mapper из MapStruct и наследование родительских классов данных; производные запросы теперь выполняются на репозитории в памяти. Осталось: проверка на настоящих Mac и iPhone (таких устройств у нас здесь нет). Переводы: выполнены ИИ, носители языка их пока не проверяли.
+
+### العربية
+
+الوضع: أداة تكتشف تلقائيًا إطار Java (من نحو 2000 إلى 2026) وتحوّله إلى FastAPI أو MFastAPI أو Poem أو RPoem. أضيف مؤخرًا من أجل PetClinic دعم ResponseEntity وHttpHeaders وUriComponentsBuilder وMapper في MapStruct ووراثة فئات البيانات الأم، وصارت الاستعلامات المشتقة تعمل على مستودع في الذاكرة. المتبقي: التحقق على جهازَي Mac وiPhone حقيقيين (لا تتوفر لدينا هذه الأجهزة هنا). الترجمات: أنجزها الذكاء الاصطناعي ولم يراجعها بعدُ متحدثون أصليون.
+
+### فارسی
+
+وضعیت: ابزاری که چارچوب Java (از حدود ۲۰۰۰ تا ۲۰۲۶) را خودکار تشخیص می‌دهد و به FastAPI، MFastAPI، Poem یا RPoem تبدیل می‌کند. اخیراً برای PetClinic پشتیبانی از ResponseEntity، HttpHeaders، UriComponentsBuilder، Mapper در MapStruct و ارث‌بری کلاس‌های دادهٔ والد افزوده شده و پرس‌وجوهای مشتق‌شده روی مخزن درون‌حافظه اجرا می‌شوند. باقی‌مانده: بررسی روی Mac و iPhone واقعی (این دستگاه‌ها را اینجا نداریم). ترجمه‌ها: با هوش مصنوعی انجام شده و هنوز گویشوران بومی آن‌ها را بررسی نکرده‌اند.
