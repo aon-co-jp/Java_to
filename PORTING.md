@@ -373,3 +373,9 @@ Agora são convertidas as lambdas com corpo em bloco e as chamadas comuns da API
 ### English
 
 Status: a tool that auto-detects the Java framework (c. 2000 to 2026) and converts to FastAPI, MFastAPI, Poem or RPoem. Recently, for PetClinic, it gained ResponseEntity, HttpHeaders, UriComponentsBuilder, MapStruct mappers and parent data class inheritance, and derived queries now run on an in-memory repository. Open: checks on a real Mac and iPhone (no such devices here). Translations: AI-translated (other than ja/en), not yet checked by native speakers.
+
+## 2026-11-25 追記: 実装が複数あるときの選び方を試験で固定 / Pinned implementation choice with a test
+
+**日本語**: リポジトリのインターフェースに実装が複数あるとき、メモリ上で動くもの(名前に Jdbc・Jpa を含まない)を優先し、無ければ先頭を選ぶ処理は実装済みでした(以前の「未対応」の記述は古い)。単体テスト `multiple_impls_prefer_non_db_one` で固定しました(Java_to 40件成功)。未了: MapStruct の複雑なマッパー、実 DB での起動確認。
+
+**English**: When a repository interface has several implementations, the generator already prefers one without Jdbc/Jpa in its name and otherwise takes the first (the earlier "unsupported" note was stale). It is now pinned by the unit test `multiple_impls_prefer_non_db_one` (Java_to: 40 pass). Open: complex MapStruct mappers and starting against a real DB.
