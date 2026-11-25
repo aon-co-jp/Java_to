@@ -250,10 +250,6 @@ pub fn generate(units: &[crate::parse::Unit], endpoints: &[Endpoint], target: &s
     for e in sorted {
         let verb = match e.verb.as_str() {
             "get" | "post" | "put" | "delete" | "head" => e.verb.clone(),
-            "patch" if rpoem => {
-                warnings.push(format!("{}: PATCH は RPoem の互換面に無いため PUT として登録しました(要確認)", e.path));
-                "put".into()
-            }
             "patch" => "patch".into(),
             v => {
                 warnings.push(format!("{} {}: {} は未対応のため飛ばしました", e.class, e.method, v.to_uppercase()));
