@@ -277,3 +277,8 @@ Policy: no new REST (Connect/gRPC), never write secrets, keep unsupported items 
 - **Rust 側の本体**: `Math.max/min/abs/pow/sqrt`、`String.valueOf`、文字列の `length/size/toUpperCase/toLowerCase/trim/isEmpty/contains/startsWith/endsWith/equals` に対応しました。対応外の呼び出しがあれば、これまでどおり TODO の応答に戻します。
 - **確認**: 単体テスト30件(生成した Python を実行して結果を確認)。`tests/run-rust.sh`・`tests/run-rpoem.sh` で生成 Rust のコンパイル確認。pl2pl の `converters/java_to` にも同期しました。
 - **まだ**: コレクション操作を含む Rust 本体、Spring PetClinic など実プロジェクトでの通し確認、複数メソッドを持つ無名クラスの全メソッド対応(いまは最初の1つだけ)。
+
+<!-- directive-20261125-1130 -->
+## 2026-11-25 指示(11:30 まで確認不要) / Directive (no confirmation until 11:30)
+**日本語**: 2026-11-25 11:30 まで、未了は確認なしで完成まで自動で進める。需要が少ない・必要性が低いと判断される、あるいは1から大規模に作り直す必要があっても、別の方式で済ませず、正面から作り直す。同時に開発する対象: COBOL_to・Java_to・MFastAPI・2MFastAPI(他の言語・フレームワークから MFastAPI 互換へ。Node.js・TypeScript は例外的に選べ、選ばない選択も可能)・RMojo・RPoRea(RPoem と Reaxt の統合)・2RPoRea(他の言語・フレームワークから RPoRea へ)・Reaxt(React+Next.js+Nuxt.js+Nest.js の統合)。1つ変えたら他を確認し、README・CLAUDE・PORTING・POLICY を日英で同じ日に更新する。
+**English**: Until 2026-11-25 11:30, carry unfinished work through to completion automatically without asking. Even if demand looks low or a large from-scratch rewrite is needed, do not substitute another approach; do the real work. Developed together: COBOL_to, Java_to, MFastAPI, 2MFastAPI (converts other languages and frameworks to MFastAPI-compatible code; Node.js and TypeScript are an optional exception and choosing neither is allowed), RMojo, RPoRea (RPoem and Reaxt integrated), 2RPoRea (converts other languages and frameworks to RPoRea) and Reaxt (React + Next.js + Nuxt.js + Nest.js integrated). When one changes, check the others and update README, CLAUDE, PORTING and POLICY in Japanese and English the same day.
