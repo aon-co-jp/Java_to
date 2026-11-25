@@ -264,7 +264,7 @@ pub fn generate(units: &[crate::parse::Unit], endpoints: &[Endpoint], target: &s
         let fn_name = fn_name.trim_end_matches('_').to_string();
         let mut path = e.path.clone();
         for p in &e.params {
-            if p.kind == Kind::Path && p.java != snake(&p.var) {
+            if !rpoem && p.kind == Kind::Path && p.java != snake(&p.var) {
                 path = path.replace(&format!("{{{}}}", p.java), &format!("{{{}}}", snake(&p.var)));
             }
         }
@@ -280,6 +280,7 @@ pub fn generate(units: &[crate::parse::Unit], endpoints: &[Endpoint], target: &s
         let (h, n_todo) = if rpoem { rpoem_handler(e, &fn_name, &dtos, &simple, &src, &mut warnings) } else { poem_handler(e, &fn_name, &dtos, &simple, &src, &mut warnings) };
         todo += n_todo;
         handlers.push_str(&h);
+        let path = if rpoem { rpoem_path_syntax(&path) } else { path };
         routes.push((path, verb, fn_name));
     }
 
@@ -333,6 +334,11 @@ pub fn generate(units: &[crate::parse::Unit], endpoints: &[Endpoint], target: &s
     Out { files: vec![("Cargo.toml".into(), cargo), ("src/main.rs".into(), main_rs), (".gitignore".into(), "target/\n".into())], warnings, todo_count: todo }
 }
 
+/// RPoem のルーターは `:id` 形式だけを解釈するので `{id}` を変換する。
+pub fn rpoem_path_syntax(p: &str) -> String {
+    p.split('/').map(|seg| match seg.strip_prefix('{').and_then(|x| x.strip_suffix('}')) { Some(n) => format!(":{n}"), None => seg.to_string() }).collect::<Vec<_>>().join("/")
+}
+
 fn is_prim_rs(t: &str) -> bool {
     matches!(t, "i32" | "i64" | "i16" | "i8" | "f64" | "f32" | "bool")
 }
@@ -355,7 +361,7 @@ fn collect(e: &Endpoint, fn_name: &str, dtos: &HashSet<String>, rpoem: bool, war
             let id = rust_ident(&p.var);
             let t = rs_type(&p.ty, dtos);
             let t = t.strip_prefix("Option<").and_then(|x| x.strip_suffix('>')).map(str::to_string).unwrap_or(t);
-            prelude.push(format!("    let {id}: {t} = params.get(\"{}\").and_then(|s| s.parse().ok()).unwrap_or_default();", snake(&p.var)));
+            prelude.push(format!("    let {id}: {t} = params.get(\"{}\").and_then(|s| s.parse().ok()).unwrap_or_default();", p.java));
         }
         if !queries.is_empty() || e.params.iter().any(|p| p.kind == Kind::Body || p.kind == Kind::Header) {
             warnings.push(format!("{} {}: クエリ/本文/ヘッダーの取り出しは RPoem の互換面での書き方が未確認のため TODO にしました", e.class, e.method));
@@ -437,7 +443,7 @@ fn rpoem_handler(e: &Endpoint, name: &str, dtos: &HashSet<String>, simple: &Opti
         Some(Simple::Block(b)) => (wrap_ret(b, "Json(serde_json::json!(@)).into_response(StatusCode::OK)"), 0),
         None => {
             let ps: Vec<String> = e.params.iter().filter(|p| p.kind == Kind::Path).map(|p| format!("\"{}\": {}", p.java, rust_ident(&p.var))).collect();
-            (format!("Json(serde_json::json!({{\"todo\": \"{name}\"{}}})).into_response(StatusCode::OK)", if ps.is_empty() { String::new() } else { format!(", {}", ps.join(", ")) }), 1)
+            (format!("Json(serde_json::json!({{\"todo\": \"{name}\"{}}})).into_response(StatusCode::NOT_IMPLEMENTED)", if ps.is_empty() { String::new() } else { format!(", {}", ps.join(", ")) }), 1)
         }
     };
     let todo_line = if todo > 0 { "    // TODO(Java_to): Java の本体を移植する\n" } else { "" };
@@ -457,6 +463,37 @@ mod tests {
     fn idents() {
         assert_eq!(rust_ident("getUserById"), "get_user_by_id");
         assert_eq!(rust_ident("type"), "type_");
+    }
+    #[test]
+    fn rpoem_paths() {
+        assert_eq!(rpoem_path_syntax("/api/users/{id}/x/{n}"), "/api/users/:id/x/:n");
+        assert_eq!(rpoem_path_syntax("/"), "/");
+    }
+    #[test]
+    fn rpoem_class_prefix_and_bodies() {
+        let src = r#"import org.springframework.web.bind.annotation.*;
+            @RestController @RequestMapping("/api/users")
+            class U {
+              @GetMapping("/{id}") String get(@PathVariable Long id) { return "user " + id; }
+              @PostMapping String create() { return "created"; }
+              @PutMapping("/{id}") String put(@PathVariable("id") String uid) { return "put:" + uid + "!"; }
+              @DeleteMapping("/{id}") String del(@PathVariable Long id) { repo.deleteById(id); audit(); return "x"; }
+              @PatchMapping("/{id}/name") String patch(@PathVariable Long id) { return "p" + id; }
+            }"#;
+        let u = crate::parse::parse_unit("U.java", src);
+        let mut w = vec![];
+        let eps = crate::endpoints::extract(&[u.clone()], &mut w);
+        let out = generate(&[u], &eps, "rpoem", "t", "../RPoem");
+        let m = &out.files[1].1;
+        assert!(m.contains(".at(\"/api/users/:id\""), "{m}");
+        assert!(m.contains(".at(\"/api/users\", post("), "{m}");
+        assert!(m.contains(".at(\"/api/users/:id/name\""), "{m}");
+        assert!(m.contains("user {}"), "{m}");
+        assert!(m.contains("put:{}!"), "{m}");
+        assert!(m.contains("NOT_IMPLEMENTED"), "{m}");
+        assert!(!m.contains("{id}"), "{m}");
+        assert!(!m.contains(":uid"), "{m}");
+        assert!(m.contains("params.get(\"id\")"), "{m}");
     }
     #[test]
     fn types() {
